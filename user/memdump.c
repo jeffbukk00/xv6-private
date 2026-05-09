@@ -73,7 +73,74 @@ void memdump(char *fmt, char *data)
 
     if (c == 'i')
     {
-        }
+      char buf_integer_32_dec[4];
+
+      for (int i = 0; i < 4; i++)
+      {
+        buf_integer_32_dec[i] = *data++;
+      }
+
+      unsigned int bytes_moved_safely = ((unsigned int)(unsigned char)buf_integer_32_dec[0]) |
+                                        ((unsigned int)(unsigned char)buf_integer_32_dec[1] << 8) |
+                                        ((unsigned int)(unsigned char)buf_integer_32_dec[2] << 16) |
+                                        ((unsigned int)(unsigned char)buf_integer_32_dec[3] << 24);
+
+      int integer_32_dec;
+
+      if (bytes_moved_safely <= 0x7FFFFFFFu)
+      {
+        integer_32_dec = (int)bytes_moved_safely;
+      }
+      else
+      {
+        integer_32_dec = -1 - (int)(0xFFFFFFFFu - bytes_moved_safely);
+      }
+
+      int max_number_of_digits = 10; // -2,147,483,648 ~ 2,147,483,647;
+      int digits[max_number_of_digits];
+
+      int is_negative = integer_32_dec < 0;
+      unsigned int value;
+      if (is_negative)
+      {
+        is_negative = 1;
+        value = (unsigned int)((integer_32_dec + 1) * -1) + 1;
+      }
+      else
+      {
+        value = (unsigned int)integer_32_dec;
+      }
+
+      int digit;
+      int ones_place = sizeof(digits) / sizeof(digits[0]) - 1;
+      int n = ones_place;
+
+      if (value == 0)
+      {
+        digits[n] = 0;
+        n--;
+      }
+
+      while (value != 0)
+      {
+        digit = value % 10;
+        digits[n] = digit;
+        value /= 10;
+        n--;
+      }
+
+      if (is_negative)
+      {
+        printf("-");
+      }
+
+      for (int i = n + 1; i <= ones_place; i++)
+      {
+        printf("%d", digits[i]);
+      }
+
+      printf("\n");
+    }
     else if (c == 'p')
     {
     }
